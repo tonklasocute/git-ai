@@ -256,7 +256,7 @@ Each provider has a token budget (`max_input_tokens`; defaults in the table belo
 
 1. **Leave out excluded files** (always done; listed in the prompt by name only).
 2. **Reduce context lines** from 3 to 1 to 0.
-3. **Map-reduce:** split the diff into budget-sized chunks, summarize each file (up to 4 requests in parallel), then write the commit message or PR from the summaries. `review` instead reviews each chunk and merges the findings.
+3. **Map-reduce:** split the diff into budget-sized chunks, summarize each file (up to 4 requests in parallel for cloud providers, one at a time for local servers so queued requests do not time out), then write the commit message or PR from the summaries. `review` instead reviews each chunk and merges the findings.
 
 It prints which strategy was used, e.g. `ℹ large diff: reduced diff context to 0 line(s); summarized 48 file(s) in 5 chunk(s) (map-reduce)`. Token counts are local estimates (about 4 characters per token for code, more conservative for Thai) and are only used for this decision; `--verbose` shows the usage the provider reported.
 
@@ -281,7 +281,7 @@ max_subject_length = 72
 emoji = false
 prompt = "Mention the Jira key from the branch name if there is one."   # extra instructions
 ignore = ["*.snap", "testdata/**"]                                       # extra exclude patterns
-timeout = "2m"
+timeout = "2m"                  # default: 2m for cloud providers, 5m for local ones
 max_retries = 3                 # retries on 429/5xx with exponential backoff (honours Retry-After)
 
 [providers.anthropic]
@@ -307,7 +307,7 @@ max_input_tokens = 6000
 | `emoji` | `false` | gitmoji prefix |
 | `prompt` | | extra instructions appended to every system prompt |
 | `ignore` | | extra gitignore-style exclude patterns |
-| `timeout` | `2m` | per request |
+| `timeout` | auto | per request; auto = 2m for cloud providers, 5m for Ollama/LM Studio |
 | `max_retries` | `3` | 0–10 |
 | `base_url` | per provider | (global only) |
 | `max_input_tokens` | per provider | token budget for diff content |
@@ -334,6 +334,8 @@ Defaults were checked against each provider's model documentation on **2026-10-1
 
 Notes: current Claude, GPT and Gemini models think before answering and count those tokens toward the output limit, so git-quill asks for a generous `max_tokens` (you are billed only for what is generated). For Claude models that support it (Opus 5.5, Sonnet 5.5, Fable 5.1, Opus 5), Anthropic's server-side refusal fallback is enabled. Errors are mapped to fixes: invalid key → how to set it; unknown model → how to change it; Ollama not running → `ollama serve`; model not pulled → `ollama pull <model>`.
 
+**Tested live** (2026-10-19): Ollama 0.40.6 with `qwen3.5:4b`, CPU only (Docker on an Apple Silicon Mac). Every command worked end to end, including setup, the hook, Thai output, map-reduce and the "model not pulled" / "Ollama not running" errors. Typical timings: commit 10–25 s, Thai with `-n 3` ~20 s, review ~45 s, pr ~50 s, a map-reduce commit over 3 large files ~1 m 50 s. A GPU is much faster. The cloud providers (Anthropic, OpenAI, Gemini, OpenRouter, Groq, LM Studio) are covered by tests against mock servers that reproduce each API's streaming format and errors, but have not yet been exercised against the real services.
+
 ## FAQ
 
 **Why "git-quill" and not "git-ai"?** The `git-ai` name is already used by [an active git extension](https://github.com/git-ai-project/git-ai) that installs a `git-ai` binary; two tools fighting over one name on your `PATH` helps nobody.
@@ -347,6 +349,8 @@ Notes: current Claude, GPT and Gemini models think before answering and count th
 **How do I skip the hook once?** `GIT_QUILL_SKIP_HOOK=1 git commit`, or just use `-m`.
 
 **How good is the Thai?** It depends on the model. Larger models write natural Thai; small local models are usable but plainer. Types, scopes, file names and identifiers stay in English so tools that parse Conventional Commits keep working.
+
+**How well do small local models do?** With `qwen3.5:4b` commit messages were accurate and Thai read naturally. Expect a few quirks: they often pick `feat` for what is really a fix (add `--type fix`), may return fewer alternatives than `-n` asks for, rate review findings more severely than they deserve, and now and then stop a PR description early (git-quill warns when sections are missing). Larger models do not have these problems.
 
 **Will my code be used for training?** That is up to the provider and your account settings. If that matters, run locally with Ollama or LM Studio.
 
@@ -376,7 +380,7 @@ Fair-minded, based on each project's README on 2026-10-19 (— means not mention
 
 ## Dogfooding
 
-This repository uses its own tool: later commits (docs, changelog) were written with `git quill commit`, and [`CHANGELOG.md`](CHANGELOG.md) with `git quill changelog --write` (then trimmed by hand: fixes to never-released code were dropped). During development no API key was configured, so those runs used the offline `fake` provider; switch `GIT_QUILL_PROVIDER` to a real one and the workflow is identical.
+This repository uses its own tool. The docs and changelog commits were written with `git quill commit` and [`CHANGELOG.md`](CHANGELOG.md) with `git quill changelog --write` (then trimmed by hand: fixes to never-released code were dropped) using the offline `fake` provider, because no API key was configured. The later fix commits were written by a real local model (Ollama, `qwen3.5:4b`) through `git quill commit --yes`, sometimes with `--type fix`; where the model got a detail wrong, the message was corrected by hand, exactly what the `[e]dit` key is for. Those live runs also found and fixed five bugs (setup wizard base URL, PR headings, changelog bullets, local timeouts and parallelism, subject truncation).
 
 ## Contributing
 
