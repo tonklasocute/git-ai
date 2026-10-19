@@ -166,13 +166,13 @@ func parseFiles(user string) []fileInfo {
 
 func commits(req provider.Request, user string, th bool, variant int) string {
 	n := 1
-	if m := countRe.FindStringSubmatch(req.System + user); m != nil {
+	if m := countRe.FindStringSubmatch(req.System); m != nil {
 		n, _ = strconv.Atoi(m[1])
 	}
 	files := parseFiles(user)
 	var out []string
 	for i := 0; i < n; i++ {
-		out = append(out, commitMessage(req.System+"\n"+user, user, files, th, variant*n+i))
+		out = append(out, commitMessage(req.System, user, files, th, variant*n+i))
 	}
 	return strings.Join(out, "\n===\n")
 }
@@ -182,8 +182,8 @@ var gitmoji = map[string]string{
 	"ci": "👷", "build": "📦", "chore": "🔧", "perf": "⚡️", "style": "🎨",
 }
 
-// commitMessage follows directives found anywhere in prompt but infers the
-// type only from the user's content (the system prompt lists every type).
+// commitMessage follows directives in the system prompt and infers the
+// type from the user content (the system prompt lists every type).
 func commitMessage(prompt, user string, files []fileInfo, th bool, variant int) string {
 	typ := inferType(files, user)
 	forced := false
