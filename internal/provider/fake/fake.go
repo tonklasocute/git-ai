@@ -478,7 +478,7 @@ func review(user string, th bool) string {
 			line, _ := strconv.Atoi(m[1])
 			code := strings.ToLower(m[2])
 			switch {
-			case strings.Contains(code, "redacted") || strings.Contains(code, "password"):
+			case strings.Contains(code, "[redacted:"):
 				msg, sug := "Credential-like value committed to source.", "Load it from the environment or a secret manager."
 				if th {
 					msg, sug = "มีค่าที่ดูเหมือนรหัสผ่าน/คีย์อยู่ในโค้ด", "ย้ายไปอ่านจาก environment หรือ secret manager"

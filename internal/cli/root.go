@@ -50,6 +50,6 @@ func newRootCmd() *cobra.Command {
 		SilenceErrors: true,
 	}
 	root.PersistentFlags().BoolP("verbose", "v", false, "show token usage, retries and diff budgeting details")
-	root.AddCommand(newCommitCmd())
+	root.AddCommand(newCommitCmd(), newPRCmd(), newChangelogCmd(), newReviewCmd())
 	return root
 }

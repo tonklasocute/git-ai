@@ -16,6 +16,7 @@ linters:
         - G304 # reading user-provided paths (config, CHANGELOG, commit msg file) is the point
         - G301 # config dirs are not secret; keys live in the OS keychain
         - G306 # config and CHANGELOG files are meant to be readable (often committed)
+        - G703 # --write writes to the path the user names
   exclusions:
     presets:
       - std-error-handling

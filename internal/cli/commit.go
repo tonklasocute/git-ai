@@ -153,12 +153,7 @@ func commitGenerator(cmd *cobra.Command, a *app.App, f *commitFlags) (ui.Generat
 			a.UI.Info("the final request is built from the model's summaries of the %d chunk(s) above; nothing was sent", len(p.Chunks))
 			return nil, nil
 		}
-		var summaries string
-		err := spin(cmd, "summarizing large diff…", func(ctx context.Context, update func(string)) error {
-			var err error
-			summaries, err = a.Summarize(ctx, p, progressTitle("summarizing chunk")(update))
-			return err
-		})
+		summaries, err := summarize(cmd, a, p)
 		if err != nil {
 			return nil, err
 		}
