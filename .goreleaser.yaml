@@ -1,0 +1,95 @@
+# yaml-language-server: $schema=https://goreleaser.com/static/schema.json
+version: 2
+project_name: git-quill
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - id: git-quill
+    main: ./cmd/git-quill
+    binary: git-quill
+    env:
+      - CGO_ENABLED=0 # fully static: keychain, clipboard and TUI are pure Go
+    goos: [linux, darwin, windows]
+    goarch: [amd64, arm64]
+    flags: [-trimpath]
+    ldflags:
+      - -s -w -X github.com/tonklasocute/git-quill/internal/cli.version={{ .Version }}
+    mod_timestamp: "{{ .CommitTimestamp }}"
+
+archives:
+  - id: default
+    formats: [tar.gz]
+    format_overrides:
+      - goos: windows
+        formats: [zip]
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    files:
+      - LICENSE
+      - README.md
+      - README.th.md
+      - CHANGELOG.md
+
+checksum:
+  name_template: checksums.txt
+
+snapshot:
+  version_template: "{{ incpatch .Version }}-next"
+
+changelog:
+  use: git
+  sort: asc
+  groups:
+    - title: Features
+      regexp: '^.*?feat(\(.+\))??!?:.+$'
+      order: 0
+    - title: Bug fixes
+      regexp: '^.*?fix(\(.+\))??!?:.+$'
+      order: 1
+    - title: Other changes
+      order: 999
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+      - "^ci:"
+      - "^chore:"
+
+release:
+  github:
+    owner: tonklasocute
+    name: git-quill
+  draft: false
+  prerelease: auto
+
+# Homebrew: uncomment once github.com/tonklasocute/homebrew-tap exists and a
+# HOMEBREW_TAP_TOKEN secret (a PAT with contents:write on that repo) is set.
+# homebrew_casks:
+#   - name: git-quill
+#     repository:
+#       owner: tonklasocute
+#       name: homebrew-tap
+#       token: "{{ .Env.HOMEBREW_TAP_TOKEN }}"
+#     homepage: https://github.com/tonklasocute/git-quill
+#     description: AI commit messages, PR descriptions, changelogs and reviews from your git diff
+#     license: MIT
+#     binaries: [git-quill]
+#     hooks:
+#       post:
+#         install: |
+#           if system_command("/usr/bin/xattr", args: ["-h"]).exit_status == 0
+#             system_command "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "#{staged_path}/git-quill"]
+#           end
+
+# Scoop (optional): uncomment once github.com/tonklasocute/scoop-bucket exists.
+# scoops:
+#   - name: git-quill
+#     repository:
+#       owner: tonklasocute
+#       name: scoop-bucket
+#       token: "{{ .Env.SCOOP_BUCKET_TOKEN }}"
+#     homepage: https://github.com/tonklasocute/git-quill
+#     description: AI commit messages, PR descriptions, changelogs and reviews from your git diff
+#     license: MIT
