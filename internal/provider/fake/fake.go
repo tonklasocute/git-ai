@@ -192,6 +192,12 @@ func commitMessage(prompt, user string, files []fileInfo, th bool, variant int) 
 	scope := inferScope(files)
 	thing := subjectNoun(files)
 	tpl := subjects(typ, th)
+	if typ != "feat" && allAdded(files) {
+		tpl = []string{"add %s"}
+		if th {
+			tpl = []string{"เพิ่ม %s"}
+		}
+	}
 	subject := fmt.Sprintf(tpl[variant%len(tpl)], thing)
 
 	header := typ
@@ -535,4 +541,13 @@ func symbols(f *diff.File) []string {
 		}
 	}
 	return out
+}
+
+func allAdded(files []fileInfo) bool {
+	for _, f := range files {
+		if f.status != "added" {
+			return false
+		}
+	}
+	return len(files) > 0
 }
