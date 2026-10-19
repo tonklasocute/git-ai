@@ -376,7 +376,7 @@ Fair-minded, based on each project's README on 2026-10-19 (— means not mention
 
 ## Dogfooding
 
-This repository uses its own tool: later commits (docs, changelog) were written with `git quill commit`, and [`CHANGELOG.md`](CHANGELOG.md) with `git quill changelog --write`. During development no API key was configured, so those runs used the offline `fake` provider; switch `GIT_QUILL_PROVIDER` to a real one and the workflow is identical.
+This repository uses its own tool: later commits (docs, changelog) were written with `git quill commit`, and [`CHANGELOG.md`](CHANGELOG.md) with `git quill changelog --write` (then trimmed by hand: fixes to never-released code were dropped). During development no API key was configured, so those runs used the offline `fake` provider; switch `GIT_QUILL_PROVIDER` to a real one and the workflow is identical.
 
 ## Contributing
 
