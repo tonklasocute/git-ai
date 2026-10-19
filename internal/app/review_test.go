@@ -136,3 +136,15 @@ func TestPrependSection(t *testing.T) {
 		t.Error("directory path should fail")
 	}
 }
+
+// Seen live with qwen3.5:4b: the model copied the instruction text onto
+// the heading lines, and used "*" bullets in the changelog.
+func TestCleanupOfEchoedInstructions(t *testing.T) {
+	_, body := ParsePR("feat: x\n\n## Summary — 1-3 sentences on what this PR does and why.\nDoes x.\n\n## Testing: how it was tested\n- [ ] run it\n\n## Changes\n- a - b")
+	if body != "## Summary\nDoes x.\n\n## Testing\n- [ ] run it\n\n## Changes\n- a - b" {
+		t.Errorf("body = %q", body)
+	}
+	if got := CleanSection("### Added\n* **auth:** Login\n  * nested"); got != "### Added\n- **auth:** Login\n  - nested" {
+		t.Errorf("bullets = %q", got)
+	}
+}

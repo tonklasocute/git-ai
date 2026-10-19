@@ -267,3 +267,16 @@ func TestConfirm(t *testing.T) {
 		t.Error("confirm")
 	}
 }
+
+func TestPRIncompleteWarning(t *testing.T) {
+	tr := setup(t, "")
+	featureBranch(t, tr)
+	t.Setenv("GIT_QUILL_FAKE_RESPONSE", "feat: x\n\n## สรุป\nบางส่วน")
+	out, errOut, code := runCLI(t, "", "pr", "--lang", "th", "--dry-run")
+	if code != 0 || !strings.Contains(out, "## สรุป") || !strings.Contains(errOut, `missing "## การเปลี่ยนแปลง", "## การทดสอบ", "## Breaking changes"`) {
+		t.Errorf("code=%d out=%s err=%s", code, out, errOut)
+	}
+	if m := missingHeadings("## Summary\nx\n## Changes\n## Testing\n## Breaking changes", "en"); len(m) != 0 {
+		t.Errorf("complete body flagged: %v", m)
+	}
+}

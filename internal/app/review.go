@@ -97,6 +97,9 @@ func (r *Review) Blocking() bool {
 var (
 	fenceAnyRe = regexp.MustCompile("(?s)^```[a-zA-Z]*\\n(.*?)\\n?```$")
 	titleRe    = regexp.MustCompile(`(?i)^(?:#+\s*)?(?:\*\*title:?\*\*:?|title:)?\s*`)
+	// Small models sometimes echo the instructions onto the heading line.
+	prHeadingRe = regexp.MustCompile(`(?m)^(## (?:Summary|Changes|Testing|Breaking changes|สรุป|การเปลี่ยนแปลง|การทดสอบ))[ \t]*(?:—|–|-|:)[^\n]*$`)
+	starBullet  = regexp.MustCompile(`(?m)^([ \t]*)\* `)
 )
 
 // ParsePR splits a PR response into title and body.
@@ -112,6 +115,7 @@ func ParsePR(text string) (title, body string) {
 		}
 		title = strings.Trim(strings.TrimSpace(titleRe.ReplaceAllString(strings.TrimSpace(l), "")), "\"'`")
 		body = strings.TrimSpace(strings.Join(lines[i+1:], "\n"))
+		body = prHeadingRe.ReplaceAllString(body, "$1")
 		return title, body
 	}
 	return "", ""
@@ -126,5 +130,6 @@ func CleanSection(text string) string {
 	if i := strings.Index(text, "### "); i > 0 {
 		text = text[i:]
 	}
-	return strings.TrimSpace(text)
+	// Keep a Changelog uses "- " bullets.
+	return strings.TrimSpace(starBullet.ReplaceAllString(text, "${1}- "))
 }

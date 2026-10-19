@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"strings"
 
 	"github.com/atotto/clipboard"
 	"github.com/spf13/cobra"
@@ -118,6 +119,9 @@ func runPR(cmd *cobra.Command, f *prFlags) error {
 	if title == "" {
 		return errors.New("the model returned an empty pull request; try again")
 	}
+	if missing := missingHeadings(body, a.Cfg.Lang); len(missing) > 0 {
+		a.UI.Warn("the description is missing %s; the model may have stopped early. Run again or try a larger model.", strings.Join(missing, ", "))
+	}
 	fmt.Fprintf(a.Out, "%s\n\n%s\n", title, body)
 	a.PrintUsageIf()
 	if f.dryRun {
@@ -177,4 +181,15 @@ func copyToClipboard(a *app.App, text string) {
 		return
 	}
 	a.UI.Success("copied to the clipboard")
+}
+
+// missingHeadings lists required PR sections absent from body.
+func missingHeadings(body, lang string) []string {
+	var missing []string
+	for _, h := range prompt.PRHeadings(lang) {
+		if !strings.Contains("\n"+body+"\n", "\n"+h+"\n") {
+			missing = append(missing, `"`+h+`"`)
+		}
+	}
+	return missing
 }

@@ -154,15 +154,19 @@ func Summarize(chunk string) provider.Request {
 
 // PR builds the pull-request request.
 func PR(o Options, commits []git.Commit, diffOrSummaries string, summarized bool) provider.Request {
-	h := prHeadings(o.Lang)
+	h := PRHeadings(o.Lang)
 	var sys strings.Builder
 	sys.WriteString("You write GitHub pull request descriptions that reviewers find genuinely useful.\n\nOutput format:\n")
 	fmt.Fprintf(&sys, "- Line 1: the PR title, at most %d characters. Use Conventional Commits style if the commits do. No \"#\", no quotes.\n", o.maxSubject())
-	sys.WriteString("- Line 2: blank.\n- Then the body in GitHub Markdown with exactly these sections, in order:\n")
-	fmt.Fprintf(&sys, "  %s — 1-3 sentences on what this PR does and why.\n", h[0])
-	fmt.Fprintf(&sys, "  %s — bullet list of the notable changes, grouped logically.\n", h[1])
-	fmt.Fprintf(&sys, "  %s — how it was or should be tested; use \"- [ ]\" checklist items when unknown.\n", h[2])
-	fmt.Fprintf(&sys, "  %s — list breaking changes and migration steps, or write \"%s\".\n", h[3], map[bool]string{false: "None.", true: "ไม่มี"}[o.Lang == "th"])
+	sys.WriteString("- Line 2: blank.\n- Then the body in GitHub Markdown using exactly these four headings, in this order, each on its own line with nothing else on it:\n")
+	for _, heading := range h {
+		sys.WriteString("  " + heading + "\n")
+	}
+	sys.WriteString("\nWhat goes under each heading:\n")
+	fmt.Fprintf(&sys, "- %s: 1-3 sentences on what this PR does and why.\n", h[0])
+	fmt.Fprintf(&sys, "- %s: a bullet list of the notable changes, grouped logically.\n", h[1])
+	fmt.Fprintf(&sys, "- %s: how it was or should be tested; use \"- [ ]\" checklist items when unknown.\n", h[2])
+	fmt.Fprintf(&sys, "- %s: breaking changes and migration steps, or just \"%s\".\n", h[3], map[bool]string{false: "None.", true: "ไม่มี"}[o.Lang == "th"])
 	sys.WriteString("\nRules:\n- Describe only what the commits and diff show. Do not invent issue numbers.\n")
 	sys.WriteString(redactionRule + "\n- " + language(o.Lang) + "\n- Output only the title and body, no code fences around the whole answer.\n")
 	sys.WriteString(custom(o))
@@ -190,7 +194,8 @@ func PR(o Options, commits []git.Commit, diffOrSummaries string, summarized bool
 	}
 }
 
-func prHeadings(lang string) [4]string {
+// PRHeadings are the section headings a PR body must contain.
+func PRHeadings(lang string) [4]string {
 	if lang == "th" {
 		return [4]string{"## สรุป", "## การเปลี่ยนแปลง", "## การทดสอบ", "## Breaking changes"}
 	}
