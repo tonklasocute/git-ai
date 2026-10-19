@@ -296,3 +296,51 @@ func TestSplitCandidatesAndClean(t *testing.T) {
 		t.Error("crlf/body normalisation")
 	}
 }
+
+func TestNewProviderCloud(t *testing.T) {
+	home := t.TempDir()
+	t.Setenv("HOME", home)
+	t.Setenv("USERPROFILE", home)
+	for _, k := range []string{"ANTHROPIC_API_KEY", "ANTHROPIC_AUTH_TOKEN", "ANTHROPIC_PROFILE", "OPENAI_API_KEY", "GEMINI_API_KEY", "GOOGLE_API_KEY"} {
+		t.Setenv(k, "")
+	}
+	cfg := config.Default()
+	for _, name := range []string{"anthropic", "openai", "gemini"} {
+		cfg.Provider = name
+		if _, err := NewProvider(cfg, nil); err == nil || !strings.Contains(err.Error(), "no API key") {
+			// The OS keychain may hold a real key on a developer machine.
+			if err == nil {
+				t.Logf("%s: key found in keychain, skipping missing-key check", name)
+				continue
+			}
+			t.Errorf("%s without key: %v", name, err)
+		}
+	}
+	t.Setenv("ANTHROPIC_AUTH_TOKEN", "oauth-token")
+	cfg.Provider = "anthropic"
+	if p, err := NewProvider(cfg, nil); err != nil || p.Name() != "anthropic" || p.Model() != "claude-haiku-5-5" {
+		t.Errorf("anthropic via ambient auth: %v", err)
+	}
+	t.Setenv("ANTHROPIC_AUTH_TOKEN", "")
+	if err := os.MkdirAll(filepath.Join(home, ".config", "anthropic"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if !anthropicAmbientAuth() {
+		t.Error("ant profile dir should count as ambient auth")
+	}
+	t.Setenv("OPENAI_API_KEY", "sk-x")
+	t.Setenv("GEMINI_API_KEY", "g")
+	cfg.Provider = "openai"
+	if p, err := NewProvider(cfg, nil); err != nil || p.Name() != "openai" || p.Model() != "gpt-6.1-sol" {
+		t.Errorf("openai: %v", err)
+	}
+	cfg.Provider = "gemini"
+	if p, err := NewProvider(cfg, nil); err != nil || p.Model() != "gemini-3.8-flash" {
+		t.Errorf("gemini: %v", err)
+	}
+	cfg.Provider = "lmstudio"
+	cfg.Providers["lmstudio"] = config.ProviderConfig{Model: "qwen"}
+	if p, err := NewProvider(cfg, nil); err != nil || p.Name() != "lmstudio" {
+		t.Errorf("lmstudio: %v", err)
+	}
+}

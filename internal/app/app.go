@@ -73,7 +73,11 @@ func (a *App) Provider() (provider.Provider, error) {
 		return a.prov, nil
 	}
 	onRetry := func(attempt int, wait time.Duration, reason string) {
-		a.UI.Dim("  retrying (%d) in %s: %s", attempt, wait.Round(100*time.Millisecond), reason)
+		if wait > 0 {
+			a.UI.Dim("  retrying (%d) in %s: %s", attempt, wait.Round(100*time.Millisecond), reason)
+		} else {
+			a.UI.Dim("  retrying (%d): %s", attempt, reason)
+		}
 	}
 	p, err := a.NewProvider(a.Cfg, onRetry)
 	if err != nil {

@@ -2,13 +2,18 @@ package app
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
 	"strconv"
 	"time"
 
 	"github.com/tonklasocute/git-quill/internal/config"
 	"github.com/tonklasocute/git-quill/internal/provider"
+	"github.com/tonklasocute/git-quill/internal/provider/anthropic"
 	"github.com/tonklasocute/git-quill/internal/provider/fake"
+	"github.com/tonklasocute/git-quill/internal/provider/gemini"
 	"github.com/tonklasocute/git-quill/internal/provider/ollama"
+	"github.com/tonklasocute/git-quill/internal/provider/openai"
 )
 
 // NewProvider builds the client for the configured provider, resolving the
@@ -22,7 +27,7 @@ func NewProvider(cfg *config.Config, onRetry func(int, time.Duration, string)) (
 		return nil, fmt.Errorf("%s needs a base_url; set it with `git quill config set base_url https://host/v1`", info.Name)
 	}
 	key, _, _ := config.APIKey(info)
-	if info.NeedsKey && key == "" {
+	if info.NeedsKey && key == "" && (info.Kind != "anthropic" || !anthropicAmbientAuth()) {
 		return nil, config.MissingKeyError(info)
 	}
 	opts := provider.Options{
@@ -55,6 +60,27 @@ func NewProvider(cfg *config.Config, onRetry func(int, time.Duration, string)) (
 		return fake.New(opts), nil
 	case "ollama":
 		return ollama.New(opts)
+	case "anthropic":
+		return anthropic.New(opts)
+	case "openai":
+		return openai.New(info.Name, opts)
+	case "gemini":
+		return gemini.New(opts)
 	}
 	return nil, fmt.Errorf("provider %q is not supported in this build", info.Name)
+}
+
+// anthropicAmbientAuth reports whether the Anthropic SDK can find
+// credentials without an API key (ANTHROPIC_AUTH_TOKEN or an `ant auth
+// login` profile).
+func anthropicAmbientAuth() bool {
+	if os.Getenv("ANTHROPIC_AUTH_TOKEN") != "" || os.Getenv("ANTHROPIC_PROFILE") != "" {
+		return true
+	}
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return false
+	}
+	_, err = os.Stat(filepath.Join(home, ".config", "anthropic"))
+	return err == nil
 }
