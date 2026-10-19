@@ -90,8 +90,9 @@ func diffArgs(contextLines int) []string {
 	if contextLines < 0 {
 		contextLines = 3
 	}
-	return []string{"diff", "--no-color", "--no-ext-diff", "--no-textconv", "--find-renames",
-		"-U" + strconv.Itoa(contextLines)}
+	// core.quotePath=false keeps non-ASCII (e.g. Thai) file names readable.
+	return []string{"-c", "core.quotePath=false", "diff", "--no-color", "--no-ext-diff", "--no-textconv",
+		"--find-renames", "-U" + strconv.Itoa(contextLines)}
 }
 
 // StagedDiff returns `git diff --cached` with the given context lines.
