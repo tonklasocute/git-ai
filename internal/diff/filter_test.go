@@ -26,13 +26,13 @@ func TestMatcher(t *testing.T) {
 		{"dist/app.min.js", true},
 		{"api/v1/service.pb.go", true},
 		{"main.go", false},
-		{"vendor.go", false},              // "vendor/" only matches directories
-		{"secrets/prod.yaml", true},       // dir-only pattern
-		{"secrets", false},                // a file named secrets is not a dir
-		{"build/out.txt", true},           // anchored dir
-		{"pkg/build/out.txt", false},      // anchored → only at root
-		{"docs/a/b/x.draft.md", true},     // **
-		{"docs/x.draft.md", true},         // ** matches zero dirs
+		{"vendor.go", false},          // "vendor/" only matches directories
+		{"secrets/prod.yaml", true},   // dir-only pattern
+		{"secrets", false},            // a file named secrets is not a dir
+		{"build/out.txt", true},       // anchored dir
+		{"pkg/build/out.txt", false},  // anchored → only at root
+		{"docs/a/b/x.draft.md", true}, // **
+		{"docs/x.draft.md", true},     // ** matches zero dirs
 		{"tmp1.txt", true}, {"tmp12.txt", false},
 		{"data7.csv", true}, {"dataX.csv", false},
 		{"#hash", true},
