@@ -279,13 +279,19 @@ func runSetup(cmd *cobra.Command) error {
 		return fmt.Errorf("%s needs a model id; see the provider's model list", info.Name)
 	}
 	baseURL := pc.BaseURL
+	defaultBase := pc.BaseURL
+	if info.Kind == "ollama" && defaultBase == "" {
+		defaultBase = ollama.DefaultBaseURL
+	}
 	if info.Name == "compatible" || info.Local {
-		baseURL = ask("Base URL", orDefault(baseURL, "http://localhost:8080/v1"))
+		baseURL = ask("Base URL", orDefault(defaultBase, "http://localhost:8080/v1"))
 	}
 	lang := ask("Commit message language (en/th)", cfg.Lang)
 
 	settings := [][2]string{{"provider", info.Name}, {"model", model}, {"lang", lang}}
-	if baseURL != "" && baseURL != info.DefaultBaseURL {
+	// Only persist a base URL the user actually changed, so OLLAMA_HOST and
+	// future default changes keep working.
+	if baseURL != "" && baseURL != info.DefaultBaseURL && baseURL != defaultBase {
 		settings = append(settings, [2]string{"base_url", baseURL})
 	}
 	for _, kv := range settings {

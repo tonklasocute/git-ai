@@ -175,3 +175,20 @@ func TestSetupCloudProvider(t *testing.T) {
 		t.Errorf("bad choice: %s", errOut)
 	}
 }
+
+// Seen live: accepting the default base URL for Ollama used to write
+// http://localhost:8080/v1.
+func TestSetupOllamaDefaultBaseURL(t *testing.T) {
+	keyring.MockInit()
+	setup(t, "")
+	t.Setenv("GIT_QUILL_PROVIDER", "")
+	t.Setenv("OLLAMA_HOST", "")
+	_, errOut, code := runCLI(t, "ollama\n\n\n\n", "config")
+	if code != 0 || !strings.Contains(errOut, "[http://localhost:11434]") {
+		t.Fatalf("default shown: %s", errOut)
+	}
+	out, _, _ := runCLI(t, "", "config", "get", "base_url")
+	if strings.TrimSpace(out) != "" {
+		t.Errorf("base_url should stay unset so OLLAMA_HOST keeps working, got %q", out)
+	}
+}
