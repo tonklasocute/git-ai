@@ -14,12 +14,14 @@ linters:
       excludes:
         - G204 # we intentionally shell out to git/gh/$EDITOR with arguments
         - G304 # reading user-provided paths (config, CHANGELOG, commit msg file) is the point
+        - G301 # config dirs are not secret; keys live in the OS keychain
+        - G306 # config and CHANGELOG files are meant to be readable (often committed)
   exclusions:
     presets:
       - std-error-handling
     rules:
       - path: _test\.go
-        linters: [gosec, errcheck]
+        linters: [gosec, errcheck, usestdlibvars, bodyclose]
 
 formatters:
   enable:

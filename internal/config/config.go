@@ -101,11 +101,6 @@ func GlobalPath() (string, error) {
 	return filepath.Join(home, ".config", "git-quill", "config.toml"), nil
 }
 
-// repoForbidden are keys a repository may not set: a cloned repo must not
-// be able to redirect your diff (and API key) to a different endpoint or
-// provider. Values are dotted paths; "*" matches any provider name.
-var repoForbidden = []string{"provider", "providers.*.base_url"}
-
 // Load reads global and repo config (repoRoot may be "") and applies env
 // overrides. A missing file is not an error.
 func Load(repoRoot string) (*Config, error) {
@@ -166,6 +161,9 @@ func readFile(path string) (map[string]any, error) {
 	return m, nil
 }
 
+// dropForbidden removes keys a repository may not set (provider and any
+// providers.*.base_url): a cloned repo must not be able to redirect your diff
+// and API key to a different endpoint. It returns the dropped keys.
 func dropForbidden(m map[string]any) []string {
 	var dropped []string
 	if _, ok := m["provider"]; ok {
@@ -187,7 +185,6 @@ func dropForbidden(m map[string]any) []string {
 			}
 		}
 	}
-	// Keys are never valid anywhere, but say so loudly if someone tries.
 	return dropped
 }
 

@@ -93,7 +93,7 @@ func (c *Client) Do(ctx context.Context, newReq func(ctx context.Context) (*http
 			reason = fmt.Sprintf("HTTP %d", resp.StatusCode)
 			wait = c.retryAfter(resp, attempt)
 			_, _ = io.Copy(io.Discard, io.LimitReader(resp.Body, 64<<10))
-			resp.Body.Close()
+			_ = resp.Body.Close()
 		default:
 			return resp, nil
 		}
@@ -112,7 +112,7 @@ func (c *Client) backoff(attempt int) time.Duration {
 		d = c.MaxDelay
 	}
 	// ±25% jitter so many clients do not retry in lockstep.
-	jitter := time.Duration(rand.Int64N(int64(d)/2+1)) - d/4
+	jitter := time.Duration(rand.Int64N(int64(d)/2+1)) - d/4 //nolint:gosec // retry jitter, not security-sensitive
 	return d + jitter
 }
 

@@ -276,16 +276,14 @@ func (r *Redactor) redactEnvEntropy(s string, found func()) string {
 	if m == nil {
 		return s
 	}
-	vStart, vEnd := m[4], m[5]
-	v := strings.TrimSpace(s[vStart:vEnd])
-	// strip one layer of quotes
+	vStart := m[4]
+	v := strings.TrimSpace(s[vStart:m[5]])
+	// strip one layer of quotes, or a trailing comment
 	if len(v) >= 2 && (v[0] == '"' || v[0] == '\'') && v[len(v)-1] == v[0] {
-		off := strings.Index(s[vStart:], v)
-		vStart, vEnd = vStart+off+1, vStart+off+len(v)-1
+		vStart += strings.Index(s[vStart:], v) + 1
 		v = v[1 : len(v)-1]
-	} else if i := strings.Index(v, " #"); i >= 0 { // trailing comment
+	} else if i := strings.Index(v, " #"); i >= 0 {
 		v = v[:i]
-		vEnd = vStart + strings.Index(s[vStart:], v) + len(v)
 	}
 	if len(v) < r.MinEntropyLen || strings.Contains(v, "[REDACTED:") || strings.ContainsAny(v, " \t") ||
 		strings.Contains(v, "://") || strings.HasPrefix(v, "/") || isPlaceholder(v) {

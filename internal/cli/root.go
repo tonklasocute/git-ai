@@ -49,5 +49,7 @@ func newRootCmd() *cobra.Command {
 		SilenceUsage:  true,
 		SilenceErrors: true,
 	}
+	root.PersistentFlags().BoolP("verbose", "v", false, "show token usage, retries and diff budgeting details")
+	root.AddCommand(newCommitCmd())
 	return root
 }

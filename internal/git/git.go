@@ -8,6 +8,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -216,14 +217,14 @@ func (r *Repo) LastTag(ctx context.Context) string {
 // CommitWithMessage runs `git commit -F <file>` with the message, passing
 // extra args through. Output goes to the given writers so hooks and gpg
 // prompts behave as usual.
-func (r *Repo) CommitWithMessage(ctx context.Context, message string, stdout, stderr *os.File, extra ...string) error {
+func (r *Repo) CommitWithMessage(ctx context.Context, message string, stdout, stderr io.Writer, extra ...string) error {
 	f, err := os.CreateTemp("", "git-quill-msg-*.txt")
 	if err != nil {
 		return err
 	}
 	defer os.Remove(f.Name())
 	if _, err := f.WriteString(message); err != nil {
-		f.Close()
+		_ = f.Close()
 		return err
 	}
 	if err := f.Close(); err != nil {
@@ -277,4 +278,14 @@ func splitNul(s string) []string {
 		}
 	}
 	return out
+}
+
+// Editor returns the editor git would use (GIT_EDITOR, core.editor, VISUAL,
+// EDITOR, then git's default).
+func (r *Repo) Editor(ctx context.Context) string {
+	out, err := r.Run(ctx, "var", "GIT_EDITOR")
+	if err != nil {
+		return ""
+	}
+	return strings.TrimSpace(out)
 }

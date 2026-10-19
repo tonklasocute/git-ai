@@ -46,6 +46,11 @@ func Truncate(s string, maxTokens int) (string, bool) {
 // map step of map-reduce. A file larger than maxTokens on its own becomes a
 // single truncated chunk.
 func Chunks(files []File, maxTokens int) []string {
+	return ChunksFunc(files, maxTokens, (*File).String)
+}
+
+// ChunksFunc is Chunks with a custom per-file renderer (e.g. Numbered).
+func ChunksFunc(files []File, maxTokens int, render func(*File) string) []string {
 	var (
 		out  []string
 		cur  strings.Builder
@@ -59,7 +64,7 @@ func Chunks(files []File, maxTokens int) []string {
 		}
 	}
 	for i := range files {
-		text := files[i].String()
+		text := render(&files[i])
 		t := EstimateTokens(text)
 		if t > maxTokens {
 			flush()

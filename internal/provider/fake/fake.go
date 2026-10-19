@@ -133,7 +133,7 @@ type fileInfo struct {
 
 var (
 	diffHeaderRe = regexp.MustCompile(`(?m)^diff --git a/.+? b/(.+)$`)
-	summaryRe    = regexp.MustCompile(`(?m)^- ([^\s:]+): \+(\d+)/-(\d+)`)
+	summaryRe    = regexp.MustCompile(`(?m)^- ([^\s:]+): \+(\d+)/-(\d+) lines(?:; (add|update|remove))?`)
 	countRe      = regexp.MustCompile(`exactly (\d+) alternative`)
 	typeRe       = regexp.MustCompile("type MUST be `(\\w+)`")
 	commitLineRe = regexp.MustCompile(`(?m)^- (?:[0-9a-f]{7,40} )?(\w+)(?:\(([^)]*)\))?(!)?: (.+)$`)
@@ -148,7 +148,11 @@ func parseFiles(user string) []fileInfo {
 		for _, m := range summaryRe.FindAllStringSubmatch(user, -1) {
 			a, _ := strconv.Atoi(m[2])
 			d, _ := strconv.Atoi(m[3])
-			files = append(files, fileInfo{path: m[1], status: "modified", added: a, deleted: d})
+			status := map[string]string{"add": "added", "remove": "deleted"}[m[4]]
+			if status == "" {
+				status = "modified"
+			}
+			files = append(files, fileInfo{path: m[1], status: status, added: a, deleted: d})
 		}
 	}
 	if len(files) == 0 {
@@ -167,7 +171,7 @@ func commits(req provider.Request, user string, th bool, variant int) string {
 	files := parseFiles(user)
 	var out []string
 	for i := 0; i < n; i++ {
-		out = append(out, commitMessage(req.System+"\n"+user, files, th, variant*n+i))
+		out = append(out, commitMessage(req.System+"\n"+user, user, files, th, variant*n+i))
 	}
 	return strings.Join(out, "\n===\n")
 }
@@ -177,8 +181,10 @@ var gitmoji = map[string]string{
 	"ci": "👷", "build": "📦", "chore": "🔧", "perf": "⚡️", "style": "🎨",
 }
 
-func commitMessage(prompt string, files []fileInfo, th bool, variant int) string {
-	typ := inferType(files, prompt)
+// commitMessage follows directives found anywhere in prompt but infers the
+// type only from the user's content (the system prompt lists every type).
+func commitMessage(prompt, user string, files []fileInfo, th bool, variant int) string {
+	typ := inferType(files, user)
 	if m := typeRe.FindStringSubmatch(prompt); m != nil {
 		typ = m[1]
 	}
