@@ -129,6 +129,7 @@ type fileInfo struct {
 	status  string // added, deleted, modified
 	added   int
 	deleted int
+	symbols []string // declarations added in the diff
 }
 
 var (
@@ -142,7 +143,7 @@ var (
 func parseFiles(user string) []fileInfo {
 	var files []fileInfo
 	for _, f := range diff.Parse(user) {
-		files = append(files, fileInfo{path: f.Path(), status: string(f.Status), added: f.Added, deleted: f.Deleted})
+		files = append(files, fileInfo{path: f.Path(), status: string(f.Status), added: f.Added, deleted: f.Deleted, symbols: symbols(&f)})
 	}
 	if len(files) == 0 { // map-reduce mode: the prompt has summaries, not a diff
 		for _, m := range summaryRe.FindAllStringSubmatch(user, -1) {
@@ -217,7 +218,11 @@ func commitMessage(prompt, user string, files []fileInfo, th bool, variant int) 
 			}
 			break
 		}
-		body = append(body, "- "+verb(f.status, th)+" "+f.path)
+		line := "- " + verb(f.status, th) + " " + f.path
+		if len(f.symbols) > 0 {
+			line += " (" + strings.Join(f.symbols, ", ") + ")"
+		}
+		body = append(body, line)
 	}
 	return header + "\n\n" + strings.Join(body, "\n")
 }
@@ -334,9 +339,9 @@ func subjects(typ string, th bool) []string {
 	if th {
 		switch typ {
 		case "feat":
-			return []string{"เพิ่ม %s", "รองรับ %s", "เพิ่มความสามารถด้าน %s"}
+			return []string{"เพิ่ม %s", "รองรับ %s", "เพิ่มความสามารถด้าน %s", "เพิ่มระบบ %s"}
 		case "fix":
-			return []string{"แก้ไขข้อผิดพลาดใน %s", "ป้องกันค่าว่างใน %s", "แก้บั๊ก %s"}
+			return []string{"แก้ไขข้อผิดพลาดใน %s", "ป้องกันค่าว่างใน %s", "แก้บั๊ก %s", "ตรวจสอบข้อมูลนำเข้าใน %s"}
 		case "docs":
 			return []string{"อัปเดตเอกสาร %s", "เพิ่มคำอธิบาย %s", "ปรับปรุงเอกสาร %s"}
 		case "test":
@@ -347,9 +352,9 @@ func subjects(typ string, th bool) []string {
 	}
 	switch typ {
 	case "feat":
-		return []string{"add %s", "support %s", "introduce %s"}
+		return []string{"add %s", "support %s", "introduce %s", "implement %s flow"}
 	case "fix":
-		return []string{"handle empty input in %s", "fix error handling in %s", "guard against nil in %s"}
+		return []string{"handle empty input in %s", "fix error handling in %s", "guard against nil in %s", "validate %s input"}
 	case "docs":
 		return []string{"update %s", "document %s", "clarify %s"}
 	case "test":
@@ -515,4 +520,19 @@ func review(user string, th bool) string {
 	}
 	b, _ := json.MarshalIndent(out, "", "  ")
 	return string(b)
+}
+
+var declRe = regexp.MustCompile(`^\+\s*(?:func\s+(?:\([^)]*\)\s*)?|type\s+|var\s+)([A-Z]\w*)`)
+
+// symbols lists exported declarations added in a file (max 3).
+func symbols(f *diff.File) []string {
+	var out []string
+	for _, h := range f.Hunks {
+		for _, l := range h.Lines {
+			if m := declRe.FindStringSubmatch(l); m != nil && len(out) < 3 {
+				out = append(out, m[1])
+			}
+		}
+	}
+	return out
 }
