@@ -64,7 +64,7 @@ func TestCommitDryRunThaiCandidates(t *testing.T) {
 	if code != 0 {
 		t.Fatalf("code=%d %s", code, errOut)
 	}
-	if out != "📝 docs(docs): อัปเดตเอกสาร guide\n===\n📝 docs(docs): เพิ่มคำอธิบาย guide\n" {
+	if out != "📝 docs(docs): เพิ่ม guide\n===\n📝 docs(docs): เพิ่มไฟล์ guide\n" {
 		t.Errorf("stdout = %q", out)
 	}
 	if n := tr.Git("rev-list", "--count", "HEAD"); strings.TrimSpace(n) != "1" {

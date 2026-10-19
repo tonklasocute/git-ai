@@ -186,16 +186,17 @@ var gitmoji = map[string]string{
 // type only from the user's content (the system prompt lists every type).
 func commitMessage(prompt, user string, files []fileInfo, th bool, variant int) string {
 	typ := inferType(files, user)
+	forced := false
 	if m := typeRe.FindStringSubmatch(prompt); m != nil {
-		typ = m[1]
+		typ, forced = m[1], true
 	}
 	scope := inferScope(files)
 	thing := subjectNoun(files)
 	tpl := subjects(typ, th)
-	if typ != "feat" && allAdded(files) {
-		tpl = []string{"add %s"}
+	if !forced && typ != "feat" && typ != "refactor" && allAdded(files) {
+		tpl = []string{"add %s", "introduce %s", "add initial %s"}
 		if th {
-			tpl = []string{"เพิ่ม %s"}
+			tpl = []string{"เพิ่ม %s", "เพิ่มไฟล์ %s", "เริ่มต้น %s"}
 		}
 	}
 	subject := fmt.Sprintf(tpl[variant%len(tpl)], thing)
