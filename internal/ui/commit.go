@@ -180,7 +180,7 @@ func (m *CommitPicker) key(k tea.KeyMsg) (tea.Model, tea.Cmd) {
 			if len(m.cands) > 1 {
 				m.state, m.cursor = stateChoose, m.idx
 			} else {
-				m.note = "only one candidate; run with -n 3 to get alternatives"
+				m.note = "only one candidate (use -n 3 for alternatives; small models sometimes return fewer than asked)"
 			}
 		case "q", "esc":
 			m.quit = true
