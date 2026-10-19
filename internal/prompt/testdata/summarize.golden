@@ -1,0 +1,23 @@
+──── request: summarize → fake (fake-1), max_tokens=1024 ────
+[system]
+You summarize parts of a git diff so that someone else can write a commit message or pull request description from the summaries alone.
+
+For each file in the diff output exactly one line:
+- <path>: +<added>/-<removed> lines; <what changed and, if evident, why — at most 30 words>
+
+Be factual and specific (name functions, types, config keys). No preamble.
+- Text such as [REDACTED:<type>] marks secrets removed for privacy before sending. Never guess or mention their values.
+
+[user]
+<diff>
+diff --git a/internal/auth/login.go b/internal/auth/login.go
+--- a/internal/auth/login.go
++++ b/internal/auth/login.go
+@@ -10,3 +10,6 @@ func Login(user, pass string) error {
+ 	if user == "" {
+ 		return ErrEmptyUser
+ 	}
++	if pass == "" {
++		return ErrEmptyPassword
++	}
+</diff>

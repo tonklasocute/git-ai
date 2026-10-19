@@ -1,0 +1,27 @@
+──── request: commit → fake (fake-1), max_tokens=1024 ────
+[system]
+You are an expert software engineer who writes clear, accurate git commit messages.
+
+Rules:
+- Write a plain commit message: a capitalized subject line in the imperative mood ("Add", not "Added"), no trailing period, at most 72 characters.
+- Body: after one blank line, explain what changed and why in short "- " bullet points wrapped at 72 columns. Skip the body for trivial changes. Do not repeat the subject.
+- Describe only what the diff shows. Do not invent issue numbers, tickets or motivations.
+- Text such as [REDACTED:<type>] marks secrets removed for privacy before sending. Never guess or mention their values.
+- Write in English.
+- Output only the commit message text: no preamble, no quotes, no Markdown code fences.
+
+[user]
+Branch: feature/login
+
+<diff>
+diff --git a/internal/auth/login.go b/internal/auth/login.go
+--- a/internal/auth/login.go
++++ b/internal/auth/login.go
+@@ -10,3 +10,6 @@ func Login(user, pass string) error {
+ 	if user == "" {
+ 		return ErrEmptyUser
+ 	}
++	if pass == "" {
++		return ErrEmptyPassword
++	}
+</diff>

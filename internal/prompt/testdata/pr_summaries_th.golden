@@ -1,0 +1,33 @@
+──── request: pr → fake (fake-1), max_tokens=2048 ────
+[system]
+You write GitHub pull request descriptions that reviewers find genuinely useful.
+
+Output format:
+- Line 1: the PR title, at most 72 characters. Use Conventional Commits style if the commits do. No "#", no quotes.
+- Line 2: blank.
+- Then the body in GitHub Markdown with exactly these sections, in order:
+  ## สรุป — 1-3 sentences on what this PR does and why.
+  ## การเปลี่ยนแปลง — bullet list of the notable changes, grouped logically.
+  ## การทดสอบ — how it was or should be tested; use "- [ ]" checklist items when unknown.
+  ## Breaking changes — list breaking changes and migration steps, or write "ไม่มี".
+
+Rules:
+- Describe only what the commits and diff show. Do not invent issue numbers.
+- Text such as [REDACTED:<type>] marks secrets removed for privacy before sending. Never guess or mention their values.
+- Write in Thai (ภาษาไทย). Keep code identifiers, file paths, commit types and scopes, and technical terms in English.
+- Output only the title and body, no code fences around the whole answer.
+
+[user]
+Branch: feature/login → main
+
+Commits (oldest first):
+- 0123456 feat(auth): add login
+- fedcba9 fix(auth): reject empty password
+  Previously an empty password
+  reached the database.
+
+The diff was too large to send in full. Per-file summaries:
+
+<summaries>
+- a.go: +1/-0 lines; x
+</summaries>

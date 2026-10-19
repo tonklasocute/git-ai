@@ -1,0 +1,40 @@
+──── request: commit → fake (fake-1), max_tokens=1024 ────
+[system]
+You are an expert software engineer who writes clear, accurate git commit messages.
+
+Rules:
+- Follow the Conventional Commits 1.0 specification: <type>(<scope>): <subject>
+- Allowed types: feat, fix, docs, style, refactor, perf, test, build, ci, chore, revert.
+- Infer <scope> from the changed paths (the main package, module or directory). Omit the scope when the change spans unrelated areas.
+- Subject: imperative mood ("add", not "added"), lower-case start, no trailing period, at most 72 characters for the whole first line.
+- If the change breaks backwards compatibility, put "!" after the type/scope and add a "BREAKING CHANGE: <description>" footer.
+- The commit type MUST be `fix`.
+- Start the first line with one gitmoji matching the change (✨ feat, 🐛 fix, 📝 docs, ♻️ refactor, ✅ test, 🔧 chore, ⚡️ perf, 👷 ci, 📦 build).
+- Write the subject line only, with no body.
+- Describe only what the diff shows. Do not invent issue numbers, tickets or motivations.
+- Text such as [REDACTED:<type>] marks secrets removed for privacy before sending. Never guess or mention their values.
+- Write in Thai (ภาษาไทย). Keep code identifiers, file paths, commit types and scopes, and technical terms in English.
+- Return exactly 3 alternative commit messages that differ meaningfully, separated by a line containing only ===.
+- Output only the commit message text: no preamble, no quotes, no Markdown code fences.
+
+Additional instructions from the user's configuration:
+Mention the Jira key from the branch if present.
+
+[user]
+Branch: feature/login
+Context from the author: closes the empty-password bug
+Also changed, content not shown: go.sum (ignore pattern), logo.png (binary)
+Note: context lines were reduced to 0 to fit the token budget
+
+<diff>
+diff --git a/internal/auth/login.go b/internal/auth/login.go
+--- a/internal/auth/login.go
++++ b/internal/auth/login.go
+@@ -10,3 +10,6 @@ func Login(user, pass string) error {
+ 	if user == "" {
+ 		return ErrEmptyUser
+ 	}
++	if pass == "" {
++		return ErrEmptyPassword
++	}
+</diff>

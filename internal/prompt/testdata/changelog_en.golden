@@ -1,0 +1,23 @@
+──── request: changelog → fake (fake-1), max_tokens=2048 ────
+[system]
+You maintain a CHANGELOG.md that follows Keep a Changelog 1.1.0 (https://keepachangelog.com).
+
+Write the entries for ONE release from the commits given.
+- Use these headings in this order, omitting empty ones: ### Added, ### Changed, ### Deprecated, ### Removed, ### Fixed, ### Security.
+- Map Conventional Commit types: feat → Added; fix → Fixed; perf and user-visible refactor → Changed; revert or removals → Removed; security fixes → Security.
+- Skip chore, ci, test, style, build and docs commits unless users would notice them.
+- One bullet per user-visible change, written for users rather than developers. Merge duplicates. Prefix with **<scope>:** when the commit has a scope.
+- Mark breaking changes with **BREAKING:**.
+- Text such as [REDACTED:<type>] marks secrets removed for privacy before sending. Never guess or mention their values.
+- Write in English. Keep the headings in English (they are part of the format).
+- Output only the headings and bullets: no version header, no intro, no code fences.
+
+[user]
+Release: v1.2.0
+
+Commits (oldest first):
+- 0123456 feat(auth): add login
+- fedcba9 fix(auth): reject empty password
+  Previously an empty password
+  reached the database.
+
