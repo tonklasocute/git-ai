@@ -104,3 +104,10 @@ func TestUsageAndHelpers(t *testing.T) {
 		t.Error("cancel func not wired")
 	}
 }
+
+func TestIsConnRefusedWindowsText(t *testing.T) {
+	err := errors.New("dial tcp 127.0.0.1:11434: connectex: No connection could be made because the target machine actively refused it.")
+	if !IsConnRefused(err) {
+		t.Error("Windows refusal text not recognised")
+	}
+}

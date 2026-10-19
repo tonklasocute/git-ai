@@ -136,7 +136,10 @@ func FromTransport(info HintInfo, err error) *Error {
 
 // IsConnRefused reports whether err is a refused TCP connection.
 func IsConnRefused(err error) bool {
-	return errors.Is(err, syscall.ECONNREFUSED) || strings.Contains(err.Error(), "connection refused")
+	msg := err.Error()
+	// Windows reports WSAECONNREFUSED, which is not syscall.ECONNREFUSED.
+	return errors.Is(err, syscall.ECONNREFUSED) || strings.Contains(msg, "connection refused") ||
+		strings.Contains(msg, "actively refused")
 }
 
 func isTimeout(err error) bool {
