@@ -43,7 +43,7 @@ func TestDefaults(t *testing.T) {
 	info, pc := c.Active()
 	if c.Provider != "anthropic" || info.Name != "anthropic" || pc.Model != "claude-haiku-5-5" ||
 		pc.MaxInputTokens != 60000 || *pc.Effort != "low" || c.Lang != "en" || c.Style != "conventional" ||
-		c.MaxSubjectLength != 72 || c.Timeout.Duration != 2*time.Minute || len(c.Sources) != 0 {
+		c.MaxSubjectLength != 72 || c.EffectiveTimeout() != 2*time.Minute || len(c.Sources) != 0 {
 		t.Errorf("defaults = %+v %+v", c, pc)
 	}
 }
@@ -123,14 +123,14 @@ func TestWarningsForUnknownAndKeys(t *testing.T) {
 
 func TestLoadErrors(t *testing.T) {
 	for name, global := range map[string]string{
-		"bad toml":     "provider = ",
-		"bad provider": `provider = "nope"`,
-		"bad lang":     `lang = "fr"`,
-		"bad style":    `style = "poetry"`,
-		"bad subject":  `max_subject_length = 5`,
-		"bad retries":  `max_retries = 99`,
-		"bad timeout":  `timeout = "soon"`,
-		"zero timeout": `timeout = "0s"`,
+		"bad toml":         "provider = ",
+		"bad provider":     `provider = "nope"`,
+		"bad lang":         `lang = "fr"`,
+		"bad style":        `style = "poetry"`,
+		"bad subject":      `max_subject_length = 5`,
+		"bad retries":      `max_retries = 99`,
+		"bad timeout":      `timeout = "soon"`,
+		"negative timeout": `timeout = "-1s"`,
 	} {
 		t.Run(name, func(t *testing.T) {
 			_, root := setup(t, global, "")
@@ -286,5 +286,23 @@ func TestKeys(t *testing.T) {
 	}
 	if envFor("nope") == "" {
 		t.Error("envFor fallback")
+	}
+}
+
+func TestEffectiveTimeout(t *testing.T) {
+	c := Default()
+	if c.EffectiveTimeout() != 2*time.Minute {
+		t.Errorf("cloud default = %v", c.EffectiveTimeout())
+	}
+	c.Provider = "ollama"
+	if c.EffectiveTimeout() != 5*time.Minute {
+		t.Errorf("local default = %v", c.EffectiveTimeout())
+	}
+	if v, _ := c.Get("timeout"); v != "5m0s" {
+		t.Errorf("Get(timeout) = %q", v)
+	}
+	c.Timeout = Duration{90 * time.Second}
+	if c.EffectiveTimeout() != 90*time.Second {
+		t.Error("explicit timeout must win")
 	}
 }

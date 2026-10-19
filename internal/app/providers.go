@@ -34,7 +34,7 @@ func NewProvider(cfg *config.Config, onRetry func(int, time.Duration, string)) (
 		Model:      pc.Model,
 		APIKey:     key,
 		BaseURL:    pc.BaseURL,
-		Timeout:    cfg.Timeout.Duration,
+		Timeout:    cfg.EffectiveTimeout(),
 		MaxRetries: cfg.MaxRetries,
 		OnRetry:    onRetry,
 		Extra:      map[string]string{},

@@ -52,6 +52,7 @@ type Config struct {
 	MaxRetries       int                       `toml:"max_retries"`
 	Providers        map[string]ProviderConfig `toml:"providers,omitempty"`
 
+	// Timeout of 0 means automatic: see EffectiveTimeout.
 	// Warnings collected while loading (unknown keys, refused repo keys).
 	Warnings []string `toml:"-"`
 	// Sources lists the files that were read, lowest precedence first.
@@ -79,7 +80,6 @@ func Default() *Config {
 		Lang:             "en",
 		Style:            "conventional",
 		MaxSubjectLength: 72,
-		Timeout:          Duration{2 * time.Minute},
 		MaxRetries:       3,
 		Providers:        map[string]ProviderConfig{},
 	}
@@ -262,8 +262,8 @@ func (c *Config) Validate() error {
 	if c.MaxRetries < 0 || c.MaxRetries > 10 {
 		return fmt.Errorf("max_retries %d out of range (0-10)", c.MaxRetries)
 	}
-	if c.Timeout.Duration <= 0 {
-		return errors.New("timeout must be positive")
+	if c.Timeout.Duration < 0 {
+		return errors.New("timeout must not be negative (0 means automatic)")
 	}
 	return nil
 }
@@ -316,7 +316,7 @@ func (c *Config) Get(key string) (string, error) {
 	case "ignore":
 		return strings.Join(c.Ignore, ","), nil
 	case "timeout":
-		return c.Timeout.String(), nil
+		return c.EffectiveTimeout().String(), nil
 	case "max_retries":
 		return strconv.Itoa(c.MaxRetries), nil
 	case "model":
@@ -421,4 +421,16 @@ func (c *Config) List() []string {
 		out = append(out, fmt.Sprintf("%s = %s", k, v))
 	}
 	return out
+}
+
+// EffectiveTimeout is the configured timeout, or 2m for cloud providers and
+// 5m for local ones (CPU-only machines can take minutes on a medium diff).
+func (c *Config) EffectiveTimeout() time.Duration {
+	if c.Timeout.Duration > 0 {
+		return c.Timeout.Duration
+	}
+	if info, ok := Lookup(c.Provider); ok && info.Local {
+		return 5 * time.Minute
+	}
+	return 2 * time.Minute
 }
