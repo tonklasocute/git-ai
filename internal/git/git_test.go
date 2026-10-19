@@ -218,3 +218,31 @@ func TestErrorMessage(t *testing.T) {
 		t.Errorf("got %q", e.Error())
 	}
 }
+
+func TestEditorAndOriginBase(t *testing.T) {
+	tr := gittest.New(t)
+	tr.Commit("init", nil)
+	r := open(t, tr)
+	ctx := context.Background()
+	t.Setenv("GIT_EDITOR", "nano -w")
+	if e := r.Editor(ctx); e != "nano -w" {
+		t.Errorf("Editor = %q", e)
+	}
+
+	// A clone knows origin/HEAD; prefer the local branch of that name.
+	clone := t.TempDir()
+	tr.Git("clone", "-q", tr.Dir, clone)
+	cr := &git.Repo{Dir: clone, Env: tr.Env}
+	if b, err := cr.DefaultBase(ctx); err != nil || b != "main" {
+		t.Errorf("clone DefaultBase = %q, %v", b, err)
+	}
+	// Without a local branch of that name, use the remote ref.
+	tr.Git("-C", clone, "checkout", "-q", "-b", "work")
+	tr.Git("-C", clone, "branch", "-q", "-D", "main")
+	if b, _ := cr.DefaultBase(ctx); b != "origin/main" {
+		t.Errorf("remote-only DefaultBase = %q", b)
+	}
+	if err := (&git.Error{Args: []string{"x"}, Err: errors.New("inner")}); !errors.Is(err, err.Err) {
+		t.Error("Unwrap")
+	}
+}
