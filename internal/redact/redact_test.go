@@ -245,3 +245,12 @@ func TestCodeIdentifierHeuristic(t *testing.T) {
 		}
 	}
 }
+
+func TestDocPlaceholders(t *testing.T) {
+	r := New()
+	for _, line := range []string{"+e.g. `postgres://user:pass@host`", "+DB_URL=mysql://root:password@localhost/db"} {
+		if _, fs := r.Diff("README.md", line); len(fs) != 0 {
+			t.Errorf("doc placeholder flagged: %q %+v", line, fs)
+		}
+	}
+}

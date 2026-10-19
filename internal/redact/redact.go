@@ -303,7 +303,7 @@ func isPlaceholder(v string) bool {
 	l := strings.ToLower(t)
 	switch l {
 	case "", "null", "nil", "none", "true", "false", "undefined", "changeme", "change_me",
-		"replace_me", "redacted", "example", "secret", "password", "token", "todo", "fixme", "dummy", "test":
+		"replace_me", "redacted", "example", "secret", "password", "pass", "passwd", "token", "todo", "fixme", "dummy", "test":
 		return true
 	}
 	if xPlaceRe.MatchString(t) {
