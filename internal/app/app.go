@@ -296,7 +296,13 @@ func (a *App) Strategy(p *Prepared, mapReduce bool) {
 func (a *App) Summarize(ctx context.Context, p *Prepared, progress func(done, total int)) (string, error) {
 	out := make([]string, len(p.Chunks))
 	errs := make([]error, len(p.Chunks))
-	sem := make(chan struct{}, 4)
+	// Local servers (Ollama, LM Studio) queue requests and run them one at a
+	// time; sending them in parallel only makes queued ones hit the timeout.
+	parallel := 4
+	if info, _ := a.Cfg.Active(); info.Local {
+		parallel = 1
+	}
+	sem := make(chan struct{}, parallel)
 	var (
 		wg   sync.WaitGroup
 		mu   sync.Mutex
