@@ -1,0 +1,11 @@
+/git-quill
+/git-quill.exe
+/dist/
+/bin/
+coverage.out
+coverage.html
+*.test
+.env
+.env.*
+!.env.example
+.DS_Store

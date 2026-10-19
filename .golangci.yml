@@ -1,0 +1,27 @@
+version: "2"
+
+linters:
+  default: standard
+  enable:
+    - bodyclose
+    - errorlint
+    - gosec
+    - misspell
+    - unconvert
+    - usestdlibvars
+  settings:
+    gosec:
+      excludes:
+        - G204 # we intentionally shell out to git/gh/$EDITOR with arguments
+        - G304 # reading user-provided paths (config, CHANGELOG, commit msg file) is the point
+  exclusions:
+    presets:
+      - std-error-handling
+    rules:
+      - path: _test\.go
+        linters: [gosec, errcheck]
+
+formatters:
+  enable:
+    - gofmt
+    - goimports
