@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 
@@ -45,6 +46,9 @@ func TestPR(t *testing.T) {
 	}
 
 	// --create without gh on PATH falls back to printing.
+	if runtime.GOOS == "windows" {
+		return // relies on a symlinked git and a PATH without gh
+	}
 	t.Setenv("PATH", filepath.Dir(gitPath(t)))
 	out, errOut, code = runCLI(t, "", "pr", "--create")
 	if code != 0 || !strings.Contains(errOut, "gh) is not installed") || out == "" {
@@ -70,6 +74,9 @@ func gitPath(t *testing.T) string {
 }
 
 func TestPRWithFakeGH(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("fake gh is a shell script")
+	}
 	tr := setup(t, "")
 	featureBranch(t, tr)
 	bin := t.TempDir()
