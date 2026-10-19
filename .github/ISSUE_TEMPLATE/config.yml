@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Security issue (e.g. a secret that was not redacted)
+    url: https://github.com/tonklasocute/git-quill/security/advisories/new
+    about: Please report privately instead of opening a public issue.

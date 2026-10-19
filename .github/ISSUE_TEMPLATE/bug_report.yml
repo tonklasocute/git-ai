@@ -1,0 +1,34 @@
+name: Bug report
+description: Something does not work as documented
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting! **Do not paste API keys or private code.** If the bug involves a prompt, `git quill <cmd> --dry-run --show-prompt` shows what is sent (with secrets redacted) — trim it to the relevant part.
+  - type: input
+    id: version
+    attributes:
+      label: git-quill version
+      description: Output of `git quill --version`
+    validations:
+      required: true
+  - type: input
+    id: env
+    attributes:
+      label: OS, provider and model
+      placeholder: macOS 15 arm64, ollama, qwen3.5:4b
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened, and what did you expect?
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+      description: Commands you ran. `-v` output helps.
+      render: shell
