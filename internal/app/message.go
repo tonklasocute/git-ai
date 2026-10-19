@@ -59,10 +59,20 @@ func ShortenSubject(s string, max int) string {
 	if max <= 0 || utf8.RuneCountInString(s) <= max {
 		return s
 	}
-	r := []rune(s)[:max]
-	cut := string(r)
-	if i := strings.LastIndex(cut, " "); i > max/2 {
-		cut = cut[:i]
+	cut := string([]rune(s)[:max])
+	// Prefer ending at a clause boundary ("… and …", "…, …") so the subject
+	// does not stop mid-phrase; otherwise end at the last whole word.
+	best := -1
+	for _, sep := range []string{" and ", " or ", ", ", "; ", " with ", " for ", " by ", " to "} {
+		if i := strings.LastIndex(cut, sep); i > best {
+			best = i
+		}
+	}
+	if best <= len(cut)/2 {
+		best = strings.LastIndex(cut, " ")
+	}
+	if best > len(cut)/2 {
+		cut = cut[:best]
 	}
 	return strings.TrimRight(cut, " ,;:-")
 }

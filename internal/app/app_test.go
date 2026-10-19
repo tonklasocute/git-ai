@@ -344,3 +344,15 @@ func TestNewProviderCloud(t *testing.T) {
 		t.Errorf("lmstudio: %v", err)
 	}
 }
+
+// Seen live: a 4B model wrote a long subject and the old cut ended
+// mid-phrase ("…echoed instructions and inconsistent").
+func TestShortenSubjectClauseBoundary(t *testing.T) {
+	s := "fix(internal/app): clean up echoed instructions and inconsistent bullets in changelogs"
+	if got := ShortenSubject(s, 72); got != "fix(internal/app): clean up echoed instructions" {
+		t.Errorf("got %q", got)
+	}
+	if got := ShortenSubject("feat(api): support pagination cursors across every list endpoint in v2", 40); got != "feat(api): support pagination cursors" {
+		t.Errorf("word cut = %q", got)
+	}
+}
