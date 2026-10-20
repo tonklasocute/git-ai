@@ -346,6 +346,8 @@ Notes: current Claude, GPT and Gemini models think before answering and count th
 
 **Does it work on Windows?** Yes, including the hook (Git for Windows runs it with its bundled `sh`) and Windows Credential Manager for keys.
 
+**macOS says the downloaded binary "cannot be opened".** Release binaries are not code-signed, so Gatekeeper quarantines files downloaded with a browser. Clear it with `xattr -d com.apple.quarantine ./git-quill`, or install with `go install` instead.
+
 **How do I skip the hook once?** `GIT_QUILL_SKIP_HOOK=1 git commit`, or just use `-m`.
 
 **How good is the Thai?** It depends on the model. Larger models write natural Thai; small local models are usable but plainer. Types, scopes, file names and identifiers stay in English so tools that parse Conventional Commits keep working.

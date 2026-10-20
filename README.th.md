@@ -155,6 +155,8 @@ model ที่ใหญ่กว่าไม่มีปัญหาเหล�
 
 **ใช้ใน CI ได้ไหม?** ได้ ใช้ `git quill commit --yes` หรือ `--dry-run` และ `git quill review --strict` จะทำให้ job ล้มเหลวเมื่อเจอปัญหาระดับ high/medium
 
+**macOS แจ้งว่าเปิดไบนารีที่ดาวน์โหลดมาไม่ได้?** ไบนารีใน Releases ยังไม่ได้ sign ไว้ ไฟล์ที่ดาวน์โหลดผ่าน browser จึงถูก Gatekeeper กักไว้ แก้ได้ด้วย `xattr -d com.apple.quarantine ./git-quill` หรือติดตั้งด้วย `go install` แทน
+
 **ข้าม hook ครั้งเดียวทำอย่างไร?** ใช้ `GIT_QUILL_SKIP_HOOK=1 git commit` หรือใส่ `-m` ไปเลย
 
 ## Contributing และ License
