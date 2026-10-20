@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"os"
 	"path/filepath"
+	"runtime/debug"
 	"strings"
 	"testing"
 
@@ -188,5 +189,22 @@ func TestVersionAndHelp(t *testing.T) {
 	}
 	if (exitError{code: 3}).Error() != "exit status 3" {
 		t.Error("exitError")
+	}
+}
+
+func TestResolveVersion(t *testing.T) {
+	if resolveVersion("v1.2.3") != "v1.2.3" {
+		t.Error("ldflags version must win")
+	}
+	if moduleVersion(&debug.BuildInfo{Main: debug.Module{Version: "v0.0.0-20261020010656-ac49ed53aa27"}}) != "v0.0.0-20261020010656-ac49ed53aa27" {
+		t.Error("module version")
+	}
+	for _, v := range []string{"", "(devel)"} {
+		if moduleVersion(&debug.BuildInfo{Main: debug.Module{Version: v}}) != "" {
+			t.Errorf("%q should be ignored", v)
+		}
+	}
+	if moduleVersion(nil) != "" || resolveVersion("dev") == "" {
+		t.Error("fallbacks")
 	}
 }

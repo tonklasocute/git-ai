@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"runtime/debug"
 
 	"github.com/spf13/cobra"
 )
@@ -45,11 +46,31 @@ func newRootCmd() *cobra.Command {
 	root := &cobra.Command{
 		Use:           "git-quill",
 		Short:         "AI commit messages, PR descriptions, changelogs and reviews from your git diff",
-		Version:       version,
+		Version:       resolveVersion(version),
 		SilenceUsage:  true,
 		SilenceErrors: true,
 	}
 	root.PersistentFlags().BoolP("verbose", "v", false, "show token usage, retries and diff budgeting details")
 	root.AddCommand(newCommitCmd(), newPRCmd(), newChangelogCmd(), newReviewCmd(), newHookCmd(), newConfigCmd())
 	return root
+}
+
+// resolveVersion prefers the ldflags version (release builds); for
+// `go install …@version` builds it falls back to the module version Go
+// embeds in the binary.
+func resolveVersion(v string) string {
+	if v != "dev" {
+		return v
+	}
+	if info, ok := debug.ReadBuildInfo(); ok && moduleVersion(info) != "" {
+		return moduleVersion(info)
+	}
+	return v
+}
+
+func moduleVersion(info *debug.BuildInfo) string {
+	if info == nil || info.Main.Version == "" || info.Main.Version == "(devel)" {
+		return ""
+	}
+	return info.Main.Version
 }
