@@ -64,26 +64,8 @@ release:
   draft: false
   prerelease: auto
 
-# Homebrew cask in github.com/tonklasocute/homebrew-tap.
-# Publishing needs a HOMEBREW_TAP_TOKEN secret (a fine-grained PAT with
-# contents:write on homebrew-tap); without it the cask is generated but not
-# uploaded, so releases never fail because of the tap.
-homebrew_casks:
-  - name: git-quill
-    repository:
-      owner: tonklasocute
-      name: homebrew-tap
-      token: '{{ envOrDefault "HOMEBREW_TAP_TOKEN" "" }}'
-    skip_upload: '{{ if isEnvSet "HOMEBREW_TAP_TOKEN" }}false{{ else }}true{{ end }}'
-    homepage: https://github.com/tonklasocute/git-quill
-    description: AI commit messages, PR descriptions, changelogs and reviews from your git diff
-    license: MIT
-    binaries: [git-quill]
-    # Release binaries are not code-signed. (A postflight hook that strips the
-    # quarantine flag is deprecated in Homebrew 7, so explain it instead.)
-    caveats: |
-      git-quill is not code-signed. If macOS blocks it, run:
-        xattr -d com.apple.quarantine "$(brew --prefix)/bin/git-quill"
+# Homebrew: github.com/tonklasocute/homebrew-tap regenerates its cask from
+# each release's checksums.txt on a schedule, so no cross-repo token is needed.
 
 # Scoop (optional): uncomment once github.com/tonklasocute/scoop-bucket exists.
 # scoops:
