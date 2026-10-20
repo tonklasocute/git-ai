@@ -19,10 +19,22 @@ jobs:
           go-version-file: go.mod
       - name: Test
         run: go test -race ./...
+      - name: Release notes from CHANGELOG.md
+        run: |
+          awk -v tag="${GITHUB_REF_NAME}" '
+            $0 ~ "^## \\[" tag "\\]" {found=1; next}
+            found && /^## \[/ {exit}
+            found && /^\[[^]]+\]: / {exit}
+            found {print}
+          ' CHANGELOG.md > "$RUNNER_TEMP/notes.md"
+          if ! grep -q . "$RUNNER_TEMP/notes.md"; then
+            echo "::error::CHANGELOG.md has no section for ${GITHUB_REF_NAME}; run git quill changelog --version ${GITHUB_REF_NAME} --write CHANGELOG.md"
+            exit 1
+          fi
       - uses: goreleaser/goreleaser-action@v7
         with:
           version: "~> v2"
-          args: release --clean
+          args: release --clean --release-notes=${{ runner.temp }}/notes.md
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # HOMEBREW_TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
