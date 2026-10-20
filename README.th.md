@@ -39,7 +39,7 @@ $ git quill review             # หาบั๊กที่น่าจะเ�
 go install github.com/tonklasocute/git-quill/cmd/git-quill@latest
 ```
 
-หรือดาวน์โหลดไบนารี (Linux, macOS, Windows ทั้ง amd64 และ arm64) จาก [Releases](https://github.com/tonklasocute/git-quill/releases) แล้วตรวจสอบกับไฟล์ `checksums.txt` ส่วน Homebrew tap จะตามมาพร้อม release แรก
+หรือดาวน์โหลดไบนารี (Linux, macOS, Windows ทั้ง amd64 และ arm64) จาก [Releases](https://github.com/tonklasocute/git-quill/releases) แล้วตรวจสอบกับไฟล์ `checksums.txt` ส่วน Homebrew tap ยังไม่เปิด (ระหว่างนี้ใช้ `go install` หรือไบนารีจาก Releases)
 
 ## ตั้งค่าใน 60 วินาที
 

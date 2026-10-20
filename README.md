@@ -49,7 +49,7 @@ go install github.com/tonklasocute/git-quill/cmd/git-quill@latest
 
 **Binaries:** download the archive for your OS (Linux, macOS, Windows; amd64 and arm64) from [Releases](https://github.com/tonklasocute/git-quill/releases), check it against `checksums.txt`, and put `git-quill` on your `PATH`.
 
-**Homebrew:** a tap (`tonklasocute/homebrew-tap`) is planned for the first tagged release.
+**Homebrew:** a tap (`tonklasocute/homebrew-tap`) is planned; until then use `go install` or a release binary.
 
 Check it works: `git quill --version`.
 
