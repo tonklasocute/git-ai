@@ -67,4 +67,6 @@ The tapes source `docs/tapes/setup.sh`, which creates an isolated throwaway repo
 
 ## Releasing (maintainers)
 
-Releases are built by GoReleaser from a `v*` tag (`.github/workflows/release.yml`). Update `CHANGELOG.md` first (`git quill changelog --version vX.Y.Z --write CHANGELOG.md`), then tag and push the tag.
+Releases are built by GoReleaser from a `v*` tag (`.github/workflows/release.yml`). Update `CHANGELOG.md` first (`git quill changelog --version vX.Y.Z --write CHANGELOG.md`); the release notes are taken from that section and the release fails if it is missing. Then tag and push the tag.
+
+The Homebrew cask in [tonklasocute/homebrew-tap](https://github.com/tonklasocute/homebrew-tap) is updated automatically when the `HOMEBREW_TAP_TOKEN` repository secret is set (a fine-grained PAT with *Contents: read and write* on `homebrew-tap`). Without it the release still succeeds and the cask has to be updated by hand.

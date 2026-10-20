@@ -26,7 +26,7 @@ $ git quill review          # likely bugs, security issues, missing tests
 
 ## Why git-quill?
 
-- **One static binary.** No Node, no Python, no runtime. `go install` or download a release (Homebrew tap planned), and `git quill` just works (git runs any `git-<name>` on your `PATH`).
+- **One static binary.** No Node, no Python, no runtime. `brew install`, `go install` or download a release, and `git quill` just works (git runs any `git-<name>` on your `PATH`).
 - **Private by default.** Secrets in your diff (cloud keys, tokens, private keys, passwords, high-entropy `.env` values) are replaced with `[REDACTED:<type>]` *before* the request is built, and you get a warning listing what was removed. Lockfiles, binaries, generated and vendored files never leave the machine. `--dry-run --show-prompt` prints exactly what would be sent and sends nothing.
 - **Fully local if you want.** Ollama and LM Studio are first-class: free, offline, no account.
 - **Big diffs handled.** Over the token budget? It drops excluded files, shrinks diff context, then summarizes per file (map-reduce), and tells you which strategy it used.
@@ -40,6 +40,12 @@ $ git quill review          # likely bugs, security issues, missing tests
 
 ## Install
 
+**Homebrew** (macOS, Linux):
+
+```sh
+brew install --cask tonklasocute/tap/git-quill
+```
+
 **Go** (1.24+):
 
 ```sh
@@ -48,7 +54,6 @@ go install github.com/tonklasocute/git-quill/cmd/git-quill@latest
 
 **Binaries:** download the archive for your OS (Linux, macOS, Windows; amd64 and arm64) from [Releases](https://github.com/tonklasocute/git-quill/releases), check it against `checksums.txt`, and put `git-quill` on your `PATH`.
 
-**Homebrew:** a tap (`tonklasocute/homebrew-tap`) is planned; until then use `go install` or a release binary.
 
 Check it works: `git quill --version`.
 
@@ -345,7 +350,7 @@ Notes: current Claude, GPT and Gemini models think before answering and count th
 
 **Does it work on Windows?** Yes, including the hook (Git for Windows runs it with its bundled `sh`) and Windows Credential Manager for keys.
 
-**macOS says the downloaded binary "cannot be opened".** Release binaries are not code-signed, so Gatekeeper quarantines files downloaded with a browser. Clear it with `xattr -d com.apple.quarantine ./git-quill`, or install with `go install` instead.
+**macOS says the downloaded binary "cannot be opened".** Release binaries are not code-signed, so Gatekeeper quarantines files downloaded with a browser. Clear it with `xattr -d com.apple.quarantine ./git-quill`, or install with `go install` instead. The Homebrew cask prints the same hint after installing.
 
 **How do I skip the hook once?** `GIT_QUILL_SKIP_HOOK=1 git commit`, or just use `-m`.
 
