@@ -45,7 +45,9 @@ func golden(t *testing.T, name string, r provider.Request) {
 	if err != nil {
 		t.Fatalf("%v (run `go test ./internal/prompt -update`)", err)
 	}
-	if got != string(want) {
+	// Tolerate CRLF checkouts (Windows with core.autocrlf) in case
+	// .gitattributes is not honoured.
+	if got != strings.ReplaceAll(string(want), "\r\n", "\n") {
 		t.Errorf("%s mismatch (run `go test ./internal/prompt -update` if intended)\n--- got ---\n%s", name, got)
 	}
 }

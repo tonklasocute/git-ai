@@ -1,0 +1,5 @@
+# Keep LF everywhere so golden files and diffs are byte-identical on Windows
+# (core.autocrlf=true would otherwise check them out with CRLF).
+* text=auto eol=lf
+*.gif binary
+*.png binary

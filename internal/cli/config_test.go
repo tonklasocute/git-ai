@@ -44,7 +44,7 @@ func TestConfigSetGetList(t *testing.T) {
 		}
 	}
 	out, _, _ = runCLI(t, "", "config", "list")
-	for _, want := range []string{"provider = openai", "lang = en", "emoji = true", "api key (openai): missing", "repo config:   ", filepath.Base(tr.Dir) + "/.git-quill.toml"} {
+	for _, want := range []string{"provider = openai", "lang = en", "emoji = true", "api key (openai): missing", "repo config:   ", filepath.Join(filepath.Base(tr.Dir), ".git-quill.toml")} {
 		if !strings.Contains(out, want) {
 			t.Errorf("list missing %q:\n%s", want, out)
 		}
